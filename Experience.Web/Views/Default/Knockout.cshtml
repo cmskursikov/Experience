@@ -1,0 +1,193 @@
+﻿@model dynamic
+@{ 
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Knockout";
+}
+<div>
+    @*<input id="tags" data-bind="autocompleteLocal: autocompleteValue, autocompleteId: autocompleteId, availableValues: availableValues, valueId: 'id', valueText: 'text'">
+    <input type="button" value="force set 111" data-bind="click: forceSetValue.bind($data, '111')"/>
+    <input type="button" value="force drop value" data-bind="click: forceSetValue.bind($data, undefined)" />
+    <div data-bind="text: 'id = ' + autocompleteId()"></div>
+    <div data-bind="text: 'value = ' + autocompleteValue()"></div>*@
+
+
+    <input id="tags" data-bind="jqueryAutocompleteLocal: { availableValues: availableValues, selectedId: autocompleteId, selectedText: autocompleteValue, valuesId: 'id', valuesText: 'text' } ">
+    <input type="button" value="force set 111" data-bind="click: forceSetValue.bind($data, '111')" />
+    <input type="button" value="force drop value" data-bind="click: forceSetValue.bind($data, undefined)" />
+    <div data-bind="text: 'id = ' + autocompleteId()"></div>
+    <div data-bind="text: 'value = ' + autocompleteValue()"></div>
+
+    <hr>
+
+    @*<input id="tags" data-bind="jquiAutocompleteLocal: { selectedValue: simpleAutocompleteSelectedValue, availableValues: simpleAutocompleteAvailableValues }">
+    <input type="button" value="force set 111" data-bind="click: forceSetValue.bind($data, simpleAutocompleteSelectedValue, '111')" />
+    <input type="button" value="force drop value" data-bind="click: forceSetValue.bind($data, simpleAutocompleteSelectedValue, undefined)" />
+    <div data-bind="text: 'id = ' + autocompleteId()"></div>
+    <div data-bind="text: 'value = ' + autocompleteValue()"></div>*@
+</div>
+
+<script type="text/javascript">
+    ko.bindingHandlers.jqueryAutocompleteLocal = {
+        init: function (element, valueAccessor, allBindingsAccessor) {
+            var availableValues = valueAccessor().availableValues;
+            var selectedId = valueAccessor().selectedId;
+            var selectedText = valueAccessor().selectedText;
+            var valuesId = valueAccessor().valuesId;
+            var valuesText = valueAccessor().valuesText;
+            var autocompleteSource = availableValues.map(function (e) {
+                return e[valuesText];
+            });
+            if (selectedId()) {
+                var curSelectedPair = availableValues.filter(function (e) {
+                    return e[valuesId] === selectedId();
+                })[0];
+                if (curSelectedPair) {
+                    selectedText(curSelectedPair[valuesText]);
+                }
+            }
+            $(element).autocomplete({
+                source: autocompleteSource,
+                select: function (event, ui) {
+                    var curSelectedText = ui.item.value;
+                    if (curSelectedText && curSelectedText !== '') {
+                        var curSelectedId = availableValues.filter(function (e) {
+                            return e[valuesText] === curSelectedText;
+                        })[0][valuesId];
+                        selectedId(curSelectedId);
+                    } else {
+                        selectedId(undefined);
+                    }
+                    selectedText(curSelectedText);
+                },
+                change: function () {
+                    var curSelectedText = $(element).val();
+                    if (!curSelectedText || curSelectedText === '') {
+                        selectedId(undefined);
+                        selectedText(curSelectedText);
+                    }
+                }
+            });
+        },
+        update: function (element, valueAccessor, allBindingsAccessor) {
+            var availableValues = valueAccessor().availableValues;
+            var valuesId = valueAccessor().valuesId;
+            var valuesText = valueAccessor().valuesText;
+            var selectedId = valueAccessor().selectedId;
+            var selectedText = valueAccessor().selectedText;
+            var curSelectedText = ko.utils.unwrapObservable(valueAccessor().selectedText());
+            curSelectedText = curSelectedText ? curSelectedText : '';
+            selectedText(curSelectedText);
+            $(element).val(curSelectedText);
+            if (curSelectedText && curSelectedText !== '') {
+                var curSelectedId = availableValues.filter(function (e) {
+                    return e[valuesText] === curSelectedText;
+                })[0][valuesId];
+                selectedId(curSelectedId);
+            } else {
+                selectedId(undefined);
+            }
+        }
+    };
+
+
+
+
+    ko.bindingHandlers.autocompleteLocal = {
+        init: function (element, valueAccessor, allBindingsAccessor) {
+            var availableValues = allBindingsAccessor().availableValues || {};
+            var valueId = allBindingsAccessor().valueId || {};
+            var valueText = allBindingsAccessor().valueText || {};
+            var autocompleteId = allBindingsAccessor().autocompleteId;
+            var source = availableValues.map(function (e) {
+                return e[valueText];
+            });
+            $(element).autocomplete({
+                source: source,
+                select: function (event, ui) {
+                    var selectedText = ui.item.value;
+                    var observable = valueAccessor();
+                    observable(selectedText);
+                    if (autocompleteId) {
+                        if (selectedText) {
+                            var selectedId = availableValues.filter(function (e) {
+                                return e[valueText] === selectedText;
+                            })[0][valueId];
+                            autocompleteId(selectedId);
+                        } else {
+                            autocompleteId(undefined);
+                        }
+                    }
+                },
+                change: function () {
+                    var selectedText = $(element).val();
+                    if (!selectedText || selectedText === '') {
+                        var observable = valueAccessor();
+                        observable(selectedText);
+                        autocompleteId(undefined);
+                    }
+                }
+            });            
+        },
+        update: function (element, valueAccessor, allBindingsAccessor) {
+            var selectedText = ko.utils.unwrapObservable(valueAccessor());
+            $(element).val(selectedText);
+            var autocompleteId = allBindingsAccessor().autocompleteId;
+            if (autocompleteId) {
+                if (selectedText) {
+                    var availableValues = allBindingsAccessor().availableValues || {};
+                    var valueId = allBindingsAccessor().valueId || {};
+                    var valueText = allBindingsAccessor().valueText || {};
+                    var selectedId = availableValues.filter(function (e) {
+                        return e[valueText] === selectedText;
+                    })[0][valueId];
+                    autocompleteId(selectedId);
+                } else {
+                    autocompleteId(undefined);
+                }
+            }
+        }
+    };
+
+    ko.bindingHandlers.jquiAutocompleteLocal = {
+        init: function (element, valueAccessor, allBindingsAccessor) {
+            debugger;
+            var availableValues = allBindingsAccessor().jquiAutocompleteLocal.availableValues || {};
+            var selectedValue = allBindingsAccessor().jquiAutocompleteLocal.selectedValue || {};
+            $(element).autocomplete({
+                source: availableValues,
+                change: function () {
+                    debugger;
+                    var observable = valueAccessor();
+                    observable(selectedText);
+                }
+            });
+        },
+        update: function (element, valueAccessor, allBindingsAccessor) {
+            debugger;
+            var selectedText = ko.utils.unwrapObservable(allBindingsAccessor().jquiAutocompleteLocal.selectedValue);
+            $(element).val(selectedText);
+        }
+    };
+
+
+    function ViewModel() {
+        var self = this;
+        this.myValue = ko.observable();
+        this.builders = [{ Id: 1, Name: "one" }, { Id: 2, Name: "two" }];
+        this.availableValues = [{ id: 1, text: '111' }, { id: 2, text: '222' }, { id: 3, text: '333' }, { id: 4, text: '444' }, { id: 38, text: '383838' }];
+        this.autocompleteValue = ko.observable(undefined);
+        this.autocompleteId = ko.observable(8);
+       /* this.forceSetValue = function (targetVar, forcedValue) {
+            targetVar(forcedValue);
+        };*/
+
+        this.forceSetValue = function (forcedValue) {
+            autocompleteValue(forcedValue);
+        };
+
+        this.simpleAutocompleteSelectedValue = ko.observable(undefined);
+        this.simpleAutocompleteAvailableValues = [ '111', '222', '333', '444', '383838'];
+    }
+    ko.applyBindings(ViewModel);
+
+</script>
