@@ -27,6 +27,65 @@
 </div>
 
 <script type="text/javascript">
+   
+    var JqueryAutocompleteLocal = (function () {
+        function JqueryAutocompleteLocal() {
+        }
+        JqueryAutocompleteLocal.prototype.init = function (element, valueAccessor) {
+            var availableValues = valueAccessor().availableValues;
+            var selectedId = valueAccessor().selectedId;
+            var valuesId = valueAccessor().valuesId;
+            var valuesText = valueAccessor().valuesText;
+            availableValues.map(function (e) {
+                e.value = e[valuesText];
+                return e;
+            });
+            $(element).autocomplete({
+                source: availableValues,
+                select: function (event, ui) {
+                    var curSelectedId = ui.item[valuesId];
+                    var curSelectedText = ui.item[valuesText];
+                    selectedId(curSelectedId);
+                },
+                change: function (event, ui) {
+                    if ($(element).val() === '') {
+                        selectedId(undefined);
+                        return;
+                    }
+                    var curSelectedId = ui.item ? ui.item[valuesId] : undefined;
+                    selectedId(curSelectedId);
+                    JqueryAutocompleteLocal.updateInternal(element, valueAccessor);
+                }
+            });
+        };
+        JqueryAutocompleteLocal.prototype.update = function (element, valueAccessor) {
+            JqueryAutocompleteLocal.updateInternal(element, valueAccessor);
+        };
+        JqueryAutocompleteLocal.updateInternal = function (element, valueAccessor) {
+            var availableValues = valueAccessor().availableValues;
+            var valuesId = valueAccessor().valuesId;
+            var valuesText = valueAccessor().valuesText;
+            var selectedId = valueAccessor().selectedId;
+            var curSelectedText;
+            var selectedIdValue = selectedId();
+            if (selectedIdValue) {
+                var curSelectedElement = availableValues.filter(function (e) {
+                    return e[valuesId] === selectedIdValue;
+                })[0];
+                if (curSelectedElement) {
+                    curSelectedText = curSelectedElement[valuesText];
+                }
+            }
+            $(element).val(curSelectedText);
+        };
+        return JqueryAutocompleteLocal;
+    })();
+    $(function () {
+        ko.bindingHandlers['jqueryAutocompleteLocal'] = new JqueryAutocompleteLocal();
+    });
+
+
+
     ko.bindingHandlers.jqueryAutocompleteLocal = {
         init: function (element, valueAccessor, allBindingsAccessor) {
             var availableValues = valueAccessor().availableValues;
