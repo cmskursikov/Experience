@@ -11,7 +11,7 @@
     <div data-bind="text: 'value = ' + autocompleteValue()"></div>*@
 
 
-    <input id="tags" data-bind="jqueryAutocompleteLocal: { availableValues: availableValues, selectedId: autocompleteId, selectedText: autocompleteValue, valuesId: 'id', valuesText: 'text' } ">
+    <input id="tags" data-bind="jqueryAutocompleteLocal: { availableValues: availableValues, selectedId: autocompleteId, valuesId: 'id', valuesText: 'text' } ">
     <input type="button" value="force set 111" data-bind="click: forceSetValue.bind($data, '111')" />
     <input type="button" value="force drop value" data-bind="click: forceSetValue.bind($data, undefined)" />
     <div data-bind="text: 'id = ' + autocompleteId()"></div>
@@ -27,7 +27,7 @@
 </div>
 
 <script type="text/javascript">
-   
+   /*
     var JqueryAutocompleteLocal = (function () {
         function JqueryAutocompleteLocal() {
         }
@@ -84,47 +84,49 @@
         ko.bindingHandlers['jqueryAutocompleteLocal'] = new JqueryAutocompleteLocal();
     });
 
-
+    */
 
     ko.bindingHandlers.jqueryAutocompleteLocal = {
         init: function (element, valueAccessor, allBindingsAccessor) {
             var availableValues = valueAccessor().availableValues;
             var selectedId = valueAccessor().selectedId;
-            var selectedText = valueAccessor().selectedText;
             var valuesId = valueAccessor().valuesId;
             var valuesText = valueAccessor().valuesText;
-            var autocompleteSource = availableValues.map(function (e) {
-                return e[valuesText];
+            availableValues.map(function (e) {
+                e.value = e[valuesText];
+                return e;
             });
-            if (selectedId()) {
-                var curSelectedPair = availableValues.filter(function (e) {
-                    return e[valuesId] === selectedId();
-                })[0];
-                if (curSelectedPair) {
-                    selectedText(curSelectedPair[valuesText]);
-                }
-            }
             $(element).autocomplete({
-                source: autocompleteSource,
-                select: function (event, ui) {
-                    var curSelectedText = ui.item.value;
-                    if (curSelectedText && curSelectedText !== '') {
-                        var curSelectedId = availableValues.filter(function (e) {
-                            return e[valuesText] === curSelectedText;
-                        })[0][valuesId];
-                        selectedId(curSelectedId);
-                    } else {
-                        selectedId(undefined);
-                    }
-                    selectedText(curSelectedText);
+                source: availableValues,
+              /*  select: function (event, ui) {
+                    var curSelectedId = ui.item[valuesId];
+                    var curSelectedText = ui.item[valuesText];
+                    selectedId(curSelectedId);
                 },
-                change: function () {
-                    var curSelectedText = $(element).val();
-                    if (!curSelectedText || curSelectedText === '') {
+                change: function (event, ui) {
+                    var valuesId = valueAccessor().valuesId;
+                    var valuesText = valueAccessor().valuesText;
+                    var selectedId = valueAccessor().selectedId;
+                    if ($(element).val() === '') {
                         selectedId(undefined);
-                        selectedText(curSelectedText);
+                        return;
                     }
-                }
+                    var curSelectedId = ui.item ? ui.item[valuesId] : undefined;
+                    selectedId(curSelectedId);
+                    var availableValues = valueAccessor().availableValues;
+                    
+                    var curSelectedText;
+                    var selectedIdValue = selectedId();
+                    if (selectedIdValue) {
+                        var curSelectedElement = availableValues.filter(function (e) {
+                            return e[valuesId] === selectedIdValue;
+                        })[0];
+                        if (curSelectedElement) {
+                            curSelectedText = curSelectedElement[valuesText];
+                        }
+                    }
+                    $(element).val(curSelectedText);
+                }*/
             });
         },
         update: function (element, valueAccessor, allBindingsAccessor) {
@@ -132,19 +134,17 @@
             var valuesId = valueAccessor().valuesId;
             var valuesText = valueAccessor().valuesText;
             var selectedId = valueAccessor().selectedId;
-            var selectedText = valueAccessor().selectedText;
-            var curSelectedText = ko.utils.unwrapObservable(valueAccessor().selectedText());
-            curSelectedText = curSelectedText ? curSelectedText : '';
-            selectedText(curSelectedText);
-            $(element).val(curSelectedText);
-            if (curSelectedText && curSelectedText !== '') {
-                var curSelectedId = availableValues.filter(function (e) {
-                    return e[valuesText] === curSelectedText;
-                })[0][valuesId];
-                selectedId(curSelectedId);
-            } else {
-                selectedId(undefined);
+            var curSelectedText;
+            var selectedIdValue = selectedId();
+            if (selectedIdValue) {
+                var curSelectedElement = availableValues.filter(function (e) {
+                    return e[valuesId] === selectedIdValue;
+                })[0];
+                if (curSelectedElement) {
+                    curSelectedText = curSelectedElement[valuesText];
+                }
             }
+            $(element).val(curSelectedText);
         }
     };
 
@@ -235,13 +235,13 @@
         this.builders = [{ Id: 1, Name: "one" }, { Id: 2, Name: "two" }];
         this.availableValues = [{ id: 1, text: '111' }, { id: 2, text: '222' }, { id: 3, text: '333' }, { id: 4, text: '444' }, { id: 38, text: '383838' }];
         this.autocompleteValue = ko.observable(undefined);
-        this.autocompleteId = ko.observable(8);
+        this.autocompleteId = ko.observable(2);
        /* this.forceSetValue = function (targetVar, forcedValue) {
             targetVar(forcedValue);
         };*/
 
         this.forceSetValue = function (forcedValue) {
-            autocompleteValue(forcedValue);
+            autocompleteId(1);
         };
 
         this.simpleAutocompleteSelectedValue = ko.observable(undefined);

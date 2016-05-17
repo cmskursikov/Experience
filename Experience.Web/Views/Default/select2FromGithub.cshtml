@@ -1,0 +1,200 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<title></title>
+	<link href="~/lib/select2/dist/css/select2.min.css" rel="stylesheet" />
+	<style>
+		select {
+			width: 200px;
+			margin-bottom: 20px;
+		}
+	</style>
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/knockout/dist/knockout.debug.js"></script>
+	<script src="~/lib/select2/dist/js/select2.min.js"></script>
+	<script src="~/lib/knockoutSelect2Bind.js"></script>
+</head>
+
+<body>
+	<div id="multiselect-view">
+		<h1>Multi-select</h1>
+		<select multiple="multiple" data-bind="options: options, selectedOptions: selectedOptions, optionsText: 'text', select2: spec"></select>
+		<span data-bind="foreach: selectedOptions()">
+			<span data-bind="text: text + ' '"></span>
+		</span>
+		<button data-bind="click: addOption">add</button>
+		<button data-bind="click: removeOption">remove</button>
+		<button data-bind="click: selectBlack">select</button>
+		<button data-bind="click: unselectBlack">unselect</button>
+	</div>
+	<script>
+        $(function () {
+        	var addOption = function () {
+        		options.push({ id: '3', text: 'BLACK' });
+        	}
+        	var removeOption = function () {
+        		options.remove(function (e) {
+        			return e.id === '3';
+        		});
+        	}
+        	var selectBlack = function () {
+        		selectedOptions.push({ id: '3', text: 'BLACK' });
+        	}
+        	var unselectBlack = function () {
+        		selectedOptions.remove(function (e) {
+        			return e.id === '3';
+        		});
+        	}
+            var options = ko.observableArray([
+                { id: '0', text: 'Red' },
+                { id: '1', text: 'White' },
+                { id: '2', text: 'Blue' }
+            ]);
+
+            var selectedOptions = ko.observableArray([
+                { id: '0', text: 'Red' },
+                { id: '1', text: 'White' },
+                { id: '2', text: 'Blue' }
+            ]);
+
+            var spec = {
+            };
+
+            var model = {
+            	addOption: addOption,
+            	removeOption: removeOption,
+            	selectBlack: selectBlack,
+            	unselectBlack: unselectBlack,
+                spec: spec,
+                options: options,
+                selectedOptions: selectedOptions
+            };
+
+            ko.applyBindings(model, $("#multiselect-view").get(0));
+        });
+	</script>
+	<div id="tags-view">
+		<h1>Tags</h1>
+		<select multiple="multiple" data-bind="options: options, selectedOptions: selectedOptions, optionsText: optionsText, select2: spec"></select>
+		<select multiple="multiple" data-bind="options: options, selectedOptions: selectedOptions, optionsText: optionsText"></select>
+		<span data-bind="foreach: selectedOptions()">
+			<span data-bind="text: $root.optionsText($data) + ' '"></span>
+		</span>
+	</div>
+	<script>
+        $(function () {
+
+                var options = [
+                    { id: '0', text: 'Red' },
+                    { id: '1', text: 'White' },
+                    { id: '2', text: 'Blue' }
+                ];
+
+                var selectedOptions = ko.observableArray();
+
+                var spec = {
+                    tags: true
+                };
+
+                var model = {
+                    spec: spec,
+                    options: options,
+                    selectedOptions: selectedOptions,
+                    optionsText: function(item) {
+                        return item.text || item;
+                    }
+                };
+
+                ko.applyBindings(model, $("#tags-view").get(0));
+            });
+	</script>
+	<div id="ajax-view">
+		<h1>Ajax</h1>
+		<select data-bind="select2Data: select2Data, select2: spec, options: initialOptions, selectedOptions: initialSelectedOptions, optionsText: 'name', optionsValue: 'abbreviation'"></select>
+	</div>
+	<script>
+        $(function () {
+
+                var select2Data = ko.observable('');
+
+                var initialOptions = [
+                    { name: 'ALABAMA', abbreviation: 'AL' }
+                ];
+                var initialSelectedOptions = $.map(initialOptions, function(item) { return item.abbreviation });
+
+                var spec = {
+                    ajax: {
+                        url: '/data',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function (data, page) {
+                            return {
+                                results: $.map(data, function (item) {
+                                    return { id: item.abbreviation, text: item.name, data: item };
+                                })
+                            };
+                        }
+                    },
+                    minimumInputLength: 1,
+                    placeholder: "Select...",
+                    templateResult: function (item) {
+                        return item.text;
+                    },
+                    templateSelection: function (item) {
+                        return item.text;
+                    },
+                    escapeMarkup: function (markup) { return markup; }
+                };
+
+                select2Data.subscribe(function (v) { console.log(v);});
+
+                var model = function()
+                {
+                    this.spec = spec;
+                    this.select2Data = select2Data;
+                    this.initialOptions = initialOptions;
+                    this.initialSelectedOptions = initialSelectedOptions;
+                };
+
+                ko.applyBindings(model(), $("#ajax-view").get(0));
+            });
+	</script>
+	<div id="dual-select-view">
+		<h1>Dual Select</h1>
+		<select data-bind="select2: specA, options: options, value: option, optionsText: 'text', optionsValue: 'id'"></select>
+		<select data-bind="select2: specB, options: options, value: option, optionsText: 'text', optionsValue: 'id'"></select>
+		<span data-bind="text: option()"></span>
+	</div>
+	<script>
+        $(function() {
+
+                var options = ko.observableArray([
+                    { id: '0', text: 'Red' },
+                    { id: '1', text: 'White' },
+                    { id: '2', text: 'Blue' }
+                ]);
+
+                var option = ko.observable('0');
+
+                var specA = {
+                    placeholder: 'SelectA'
+                };
+
+                var specB = {
+                    placeholder: 'SelectB'
+                };
+
+                var model = {
+                    specA: specA,
+                    specB: specB,
+                    options: options,
+                    option: option
+                };
+
+                ko.applyBindings(model, $("#dual-select-view").get(0));
+            });
+	</script>
+</body>
+
+</html>

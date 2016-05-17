@@ -1,0 +1,40 @@
+﻿@model dynamic
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = "Knockout";
+}
+
+<h1>Components</h1>
+<hr>
+<!-- ko if: showCategories -->
+<div data-bind="component: { name: 'categories', params: vmCategories }"></div>
+<!-- /ko -->
+<!-- ko ifnot: showCategories -->
+<concretes params=""></concretes>
+<!-- /ko -->
+
+<script>
+	$(document).ready(function () {
+		ko.components.register('categories', {
+			viewModel: getVmCategories,
+			template: { element: 'categories-component-template' }
+		});
+		ko.components.register('concretes', {
+			viewModel: getVmConcretes,
+			template: { element: 'concretes-component-template' }
+		});
+		ko.applyBindings(getVmFull());
+	});
+</script>
+
+<template id='categories-component-template'>
+	<h2>Categories:</h2>
+	<div data-bind="foreach: { data: categories, as: 'category'}">
+		<div data-bind="text: category.text"></div>
+	</div>
+</template>
+<template id='concretes-component-template'>
+	<div>
+		Concretes
+	</div>
+</template>
