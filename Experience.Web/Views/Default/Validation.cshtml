@@ -1,0 +1,75 @@
+﻿@model dynamic
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = "Validation";
+}
+
+<div class="container">
+	<h1 class="text-center">Validation</h1>
+	<div class="row">
+		<div class="col-xs-4 col-xs-offset-4">
+			<form>
+				<div class="form-group" data-bind="validationElement: nickname, css: { 'has-success': nickname.isModified() && nickname.isValid() }">
+					<label for="Nickname" class="control-label">Nickname</label>
+					<div class="input-group">
+						<span class="input-group-addon">@@</span>
+						<input id="Nickname" type="text" class="form-control" data-bind="textInput: nickname" />
+						<span class="glyphicon form-control-feedback glyphicon-ok" data-bind="css: { 'hide': !nickname.isModified() || !nickname.isValid() }"></span>
+					</div>
+					<span class="help-block" data-bind="validationMessage: nickname"></span>
+				</div>
+				
+				<div class="form-group" data-bind="validationElement: description, css: { 'has-success': description.isModified() && description.isValid() }">
+					<label for="Description" class="control-label">Description</label>
+					<textarea id="Description" rows="5" class="form-control" data-bind="textInput: description"></textarea>
+					<span class="help-block" data-bind="validationMessage: description"></span>
+				</div>
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" /> Keep sign in
+					</label>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary" data-bind="click: register">Register</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<br>
+
+<script>
+	$(document).ready(function () {
+		initValidation();
+		ko.applyBindings(getVmFull());
+	});
+	var initValidation = function () {
+		ko.validation.init({
+			errorElementClass: 'has-error',
+			errorMessageClass: 'help-block',
+			insertMessages: false,
+			errorsAsTitle: false,
+			messageTemplate: null
+		}, true);
+		ko.validation.locale('ru-RU');
+	}
+	var getVmFull = function () {
+		var self = {};
+		self.nickname = ko.observable(null).extend({ required: { params: true, message: 'Это поле должно быть заполнено.' } });
+		self.description = ko.observable(null).extend({
+			required: { params: true, message: 'Это поле должно быть заполнено.' },
+			minLength: { params: 10, message: 'Описание должно составлять не менее 10 символов.' }
+		});
+		self.errors = ko.validation.group(self);
+		self.register = function () {
+			if (self.errors().length === 0) {
+				alert('OK.');
+			}
+			else {
+				alert('Ne OK.');
+				self.errors.showAllMessages();
+			}
+		}
+		return self;
+	}
+</script>

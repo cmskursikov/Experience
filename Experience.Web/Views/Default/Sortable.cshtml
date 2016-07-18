@@ -1,0 +1,33 @@
+﻿@model dynamic
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = "Knockout";
+}
+
+<h1>Sortable</h1>
+<div data-bind="sortable: items()">
+	<div data-bind="text: $data"></div>
+</div>
+<br>
+<button data-bind="click: add">add</button>
+
+<script>
+	$(document).ready(function () {
+		ko.applyBindings(getVmFull());
+	});
+	var getVmFull = function () {
+		var self = {};
+		//self.items = ko.computed(function () {
+		//	return [1, 1, 2, 3, 5, 8];
+		//});
+		self.arr = ko.observableArray([1, 1, 2, 3, 5, 8]);
+		self.items = ko.computed(function () {
+			return self.arr;
+		});
+		self.add = function () {
+			var length = self.arr().length;
+			self.arr.push(self.arr()[length - 1] + self.arr()[length - 2]);
+		}
+		return self;
+	}
+</script>

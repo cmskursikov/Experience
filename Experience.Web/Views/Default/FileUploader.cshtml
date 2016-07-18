@@ -1,0 +1,50 @@
+﻿@model dynamic
+@{ 
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Knockout";
+}
+<div>
+	<img style="width: 300px; height: 300px;" data-bind="attr: { src: dataUrl }"/>
+	<input type="file" data-bind="file: { file: file, dataUrl: dataUrl }"/>
+	<button data-bind="click: click">azaza</button>
+</div>
+
+<script type="text/javascript">
+    ko.bindingHandlers.file = {
+    	init: function (element, valueAccessor, allBindingsAccessor) {
+    		ko.utils.registerEventHandler(element, "change", function (e, w, r) {
+    			var file = valueAccessor().file;
+    			var dataUrl = valueAccessor().dataUrl
+    			file(e.target.files[0]);
+    			var reader = new FileReader();
+    			reader.onload = function (e) { dataUrl((e.target).result) };
+    			reader.readAsDataURL(file());
+    		});
+    		$(element).fileupload({
+    			url: '@Url.Action("FileUpload", "Default")',
+    			dataType: 'text',
+    			maxNumberOfFiles: 1,
+    			replaceFileInput: false,
+    			add: function (e, data) {
+    				data.submit();
+    			},
+    			done: function (e, data) {
+    				if (data) {
+    					alert('OK');
+    				} else {
+    					alert('FAIL');
+    				}
+    			}
+    		});
+        }
+    };
+    function ViewModel() {
+        var self = this;
+        self.dataUrl = ko.observable(null);
+        self.file = ko.observable(null);
+        self.click = function () {
+        	debugger;
+        }
+    }
+    ko.applyBindings(ViewModel);
+</script>
