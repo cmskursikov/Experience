@@ -6,12 +6,12 @@
 
 <h1>Components</h1>
 <hr>
-<!-- ko if: showCategories -->
+@*<!-- ko if: showCategories -->*@
 <div data-bind="component: { name: 'categories', params: vmCategories }"></div>
-<!-- /ko -->
-<!-- ko ifnot: showCategories -->
-<concretes params=""></concretes>
-<!-- /ko -->
+@*<!-- /ko -->*@
+@*<!-- ko ifnot: showCategories -->*@
+<div data-bind="component: { name: 'concretes', params: vmConcretes }"></div>
+@*<!-- /ko -->*@
 
 <script>
 	$(document).ready(function () {
@@ -34,7 +34,8 @@
 	</div>
 </template>
 <template id='concretes-component-template'>
-	<div>
-		Concretes
+	<h2>Concretes</h2>
+	<div data-bind="foreach: { data: $component.concretes, as: 'concrete'}">
+		<div data-bind="text: concrete.text"></div>
 	</div>
 </template>
